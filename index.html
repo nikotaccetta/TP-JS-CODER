@@ -34,7 +34,22 @@
         </div>
     </div>
 
-    
+    <!-- FORMULARIO INGRESO/EGRESOS -->
+
+    <form id="forma" onsubmit="return false;">
+        <div class="agregar">
+            <div class="agregar_contenedor">
+                <select class="agregar_tipo" id="tipo">
+                    <option value="ingreso" selected>+</option>
+                    <option value="egreso" selected>-</option>
+                </select>
+                <input type="text" class="agregar_descripcion" placeholder="Agregar Descripción" id="descripcion"/>
+                <input type="number" class="agregar_valor" placeholder="Valor" id="valor" step="any" />
+                <button class="agregar_btn" onclick="agregarDato()"> <ion-icon name="checkmark-circle-outline"></ion-icon>
+                </button>
+            </div>
+        </div>
+    </form>
 
     <div class="contenedor limpiarEstilos">
         <!-- INGRESOS -->
@@ -98,11 +113,6 @@
             </div>
         </div>
     </div>
-
-    
-    
-
-
     <script src='js/Dato.js'></script>
     <script src='js/Ingreso.js'></script>
     <script src='js/Egreso.js'></script>
