@@ -157,11 +157,14 @@ let agregarDato = ()=>{
             ingresos.push( new Ingreso(descripcion.value, +valor.value));
             cargarCabecero();
             cargarIngresos();
-        }
+            swal("Bien agregaste un ingreso");
+        }        
         else if(tipo.value === 'egreso'){
             egresos.push( new Egreso(descripcion.value, +valor.value));
             cargarCabecero();
             cargarEgresos();
+            swal("Bien agregaste un egreso");
         }
     }
+    
 }
