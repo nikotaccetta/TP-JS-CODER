@@ -1,12 +1,7 @@
-const ingresos = [
-  new Ingreso("Sueldo", 99000.0),
-  new Ingreso("Criptomonedas", 3000.0),
-];
+window.onload = () => cargarCategoria();
 
-const egresos = [
-  new Egreso("Alquiler", 45000.0),
-  new Egreso("Tarjeta", 5000.0),
-];
+const ingresos = [];
+const egresos = [];
 
 let cargarApp = () => {
   cargarCabecero();
@@ -63,21 +58,23 @@ const formatoPorcentaje = (valor) => {
   });
 };
 
-// Eliminar ingreso/igreso // 
+// Eliminar ingreso/igreso //
 
-const eliminarIngreso = (id)=>{
-    let indiceEliminar = ingresos.findIndex( ingreso => ingreso.id === id);
-    ingresos.splice(indiceEliminar, 1);
-    cargarCabecero();
-    cargarIngresos();
-}
+const eliminarIngreso = (id) => {
+  let indiceEliminar = ingresos.findIndex((ingreso) => ingreso.id === id);
+  ingresos.splice(indiceEliminar, 1);
+  cargarCabecero();
+  cargarIngresos();
+  swal("Eliminaste un Ingreso");
+};
 
-const eliminarEgreso = (id)=>{
-    let indiceEliminar = egresos.findIndex(egreso => egreso.id === id);
-    egresos.splice(indiceEliminar, 1);
-    cargarCabecero();
-    cargarEgresos();
-}
+const eliminarEgreso = (id) => {
+  let indiceEliminar = egresos.findIndex((egreso) => egreso.id === id);
+  egresos.splice(indiceEliminar, 1);
+  cargarCabecero();
+  cargarEgresos();
+  swal("Eliminaste un Egreso");
+};
 
 // Lista Ingresos //
 
@@ -94,13 +91,18 @@ const cargarIngresos = () => {
 const crearIngresoHTML = (ingreso) => {
   let ingresoHTML = `
     <div class="elemento limpiarEstilos">
-        <div class="elemento_descripcion">${ingreso.descripcion}</div>
+    
+    <div class="elemento_descripcion" style="margin-right: 35px">
+    <span style="margin-right: 5px">${ingreso.categoria}</span>
+    ${ingreso.descripcion}</div>
             <div class="derecha limpiarEstilos">
                 <div class="elemento_valor">${formatoMoneda(ingreso.valor)}
                     </div>
                         <div class="elemento_eliminar">
                             <button class="elemento_eliminar--btn">
-                                <ion-icon name="close-outline" onclick='eliminarIngreso(${ingreso.id})'></ion-icon>
+                                <ion-icon name="close-outline" onclick='eliminarIngreso(${
+                                  ingreso.id
+                                })'></ion-icon>
                             </button>
             </div>
         </div>                    
@@ -124,9 +126,12 @@ const cargarEgresos = () => {
 const crearEgresoHTML = (egreso) => {
   let egresoHTML = `
     <div class="elemento limpiarEstilos">
-                    <div class="elemento_descripcion">${
-                      egreso.descripcion
-                    }</div>
+    <div class="elemento_descripcion">
+
+                    <div class="elemento_descripcion" style="margin-right: 35px">
+                    <span style="margin-right: 5px">${egreso.categoria}</span>
+                    ${egreso.descripcion}</div>
+
                     <div class="derecha limpiarEstilos">
                         <div class="elemento_valor">- ${formatoMoneda(
                           egreso.valor
@@ -136,7 +141,9 @@ const crearEgresoHTML = (egreso) => {
                         )}</div>
                         <div class="elemento_eliminar">
                             <button class="elemento_eliminar--btn">
-                                <ion-icon name="close-outline" onclick='eliminarEgreso(${egreso.id})'></ion-icon>
+                                <ion-icon name="close-outline" onclick='eliminarEgreso(${
+                                  egreso.id
+                                })'></ion-icon>
                             </button>
                         </div>
                     </div>
@@ -147,24 +154,41 @@ const crearEgresoHTML = (egreso) => {
 
 // Agregar Datos Formulario //
 
-let agregarDato = ()=>{
-    let forma = document.getElementById('forma');
-    let tipo = forma['tipo'];
-    let descripcion = forma['descripcion'];
-    let valor = forma['valor'];
-    if(descripcion.value !== '' && valor.value !== ''){
-        if(tipo.value === 'ingreso'){
-            ingresos.push( new Ingreso(descripcion.value, +valor.value));
-            cargarCabecero();
-            cargarIngresos();
-            swal("Bien agregaste un ingreso");
-        }        
-        else if(tipo.value === 'egreso'){
-            egresos.push( new Egreso(descripcion.value, +valor.value));
-            cargarCabecero();
-            cargarEgresos();
-            swal("Bien agregaste un egreso");
-        }
+let agregarDato = () => {
+  let forma = document.getElementById("forma");
+  let categoria = forma["categoria"];
+  let tipo = forma["tipo"];
+  let descripcion = forma["descripcion"];
+  let valor = forma["valor"];
+  if (descripcion.value !== "" && valor.value !== "") {
+    if (tipo.value === "ingreso") {
+      ingresos.push(
+        new Ingreso(descripcion.value, +valor.value, categoria.value)
+      );
+      cargarCabecero();
+      cargarIngresos();
+      swal("Agregaste un nuevo ingreso");
+    } else if (tipo.value === "egreso") {
+      egresos.push(
+        new Egreso(descripcion.value, +valor.value, categoria.value)
+      );
+      cargarCabecero();
+      cargarEgresos();
+      swal("Agregaste un nuevo egreso");
     }
-    
-}
+  }
+};
+
+let cargarCategoria = async () => {
+  let contenido = "";
+
+  const res = await fetch("data/categorias.json");
+  const resJSON = await res.json();
+
+  resJSON.Tipo.map(
+    (pepe) =>
+      (contenido += `<option value="${pepe.value}" selected>${pepe.descripcion}</option>`)
+  );
+  const desplegable = document.getElementById("categoria");
+  desplegable.innerHTML = contenido;  
+};

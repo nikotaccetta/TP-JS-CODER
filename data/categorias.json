@@ -1,0 +1,6 @@
+{
+  "Tipo": [
+    { "value": "Fijo", "descripcion": "Fijo" },
+    { "value": "Variable", "descripcion": "Variable" }
+  ]
+}
