@@ -125,8 +125,7 @@ const cargarEgresos = () => {
 
 const crearEgresoHTML = (egreso) => {
   let egresoHTML = `
-    <div class="elemento limpiarEstilos">
-    <div class="elemento_descripcion">
+    <div class="elemento limpiarEstilos">   
 
                     <div class="elemento_descripcion" style="margin-right: 35px">
                     <span style="margin-right: 5px">${egreso.categoria}</span>
