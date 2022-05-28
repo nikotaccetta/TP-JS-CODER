@@ -1,183 +1,104 @@
-window.onload = () => cargarCategoria();
+const cuentaApp = new Cuenta();
 
-const ingresos = [];
-const egresos = [];
-
-let cargarApp = () => {
+window.onload = () => {
   cargarCabecero();
-  cargarIngresos();
-  cargarEgresos();
+  cargarCategoria();
+  cuentaApp.registros.map((registro) => agregarRegistro(registro));
 };
 
-let totalIngresos = () => {
-  let totalIngreso = 0;
-  for (let ingreso of ingresos) {
-    totalIngreso += ingreso.valor;
-  }
-  return totalIngreso;
-};
-
-let totalEgresos = () => {
-  let totalEgreso = 0;
-  for (let egreso of egresos) {
-    totalEgreso += egreso.valor;
-  }
-  return totalEgreso;
-};
-
-// Cargar datos al cabezal //
-
+// Cargar datos al cabezal
 let cargarCabecero = () => {
-  let presupuesto = totalIngresos() - totalEgresos();
-  let porcentajeEgreso = totalEgresos() / totalIngresos();
-  document.getElementById("presupuesto").innerHTML = formatoMoneda(presupuesto);
-  document.getElementById("porcentaje").innerHTML =
-    formatoPorcentaje(porcentajeEgreso);
-  document.getElementById("ingresos").innerHTML = formatoMoneda(
-    totalIngresos()
+  document.getElementById("presupuesto").innerHTML = formatoMoneda(
+    cuentaApp.presupuesto()
   );
-  document.getElementById("egresos").innerHTML = formatoMoneda(totalEgresos());
+
+  document.getElementById("porcentaje").innerHTML = formatoPorcentaje(
+    cuentaApp.porcentajeEgreso()
+  );
+
+  document.getElementById("ingresos").innerHTML = formatoMoneda(
+    cuentaApp.totalIngresos
+  );
+
+  document.getElementById("egresos").innerHTML = formatoMoneda(
+    cuentaApp.totalEgresos
+  );
 };
 
-// Formato para la moneda $ //
+// Obtener datos del formulario
+const obtenerDatosDeForm = () => {
+  let forma = document.getElementById("forma");
+  let categoria = forma["categoria"].value;
+  let tipo = forma["tipo"].value;
+  let descripcion = forma["descripcion"].value;
+  let valor = forma["valor"].value;
 
-const formatoMoneda = (valor) => {
-  return valor.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  });
+  const registro = {
+    tipo,
+    categoria,
+    descripcion,
+    valor,
+  };
+
+  return registro;
 };
 
-// Formato para el % //
+// Agregar registro
+let agregarRegistro = (registro) => {
+  // Si el registro no es pasado por parametro (Por carga inicial), el registro se crea en base a los datos del FORM
+  const nuevoRegistro = registro
+    ? registro
+    : cuentaApp.agregarRegistro(obtenerDatosDeForm());
 
-const formatoPorcentaje = (valor) => {
-  return valor.toLocaleString("en-US", {
-    style: "percent",
-    minimumFractionDigits: 2,
-  });
-};
+  if (nuevoRegistro) {
+    const destinoDOM =
+      nuevoRegistro.tipo === "ingreso"
+        ? document.getElementById("lista-ingresos")
+        : document.getElementById("lista-egresos");
 
-// Eliminar ingreso/igreso //
-
-const eliminarIngreso = (id) => {
-  let indiceEliminar = ingresos.findIndex((ingreso) => ingreso.id === id);
-  ingresos.splice(indiceEliminar, 1);
-  cargarCabecero();
-  cargarIngresos();
-  swal("Eliminaste un Ingreso");
-};
-
-const eliminarEgreso = (id) => {
-  let indiceEliminar = egresos.findIndex((egreso) => egreso.id === id);
-  egresos.splice(indiceEliminar, 1);
-  cargarCabecero();
-  cargarEgresos();
-  swal("Eliminaste un Egreso");
-};
-
-// Lista Ingresos //
-
-const cargarIngresos = () => {
-  let ingresosHTML = "";
-  for (let ingreso of ingresos) {
-    ingresosHTML += crearIngresoHTML(ingreso);
+    destinoDOM.innerHTML += crearRegistroHTML(nuevoRegistro);
+    cargarCabecero();
   }
-  document.getElementById("lista-ingresos").innerHTML = ingresosHTML;
 };
 
-// Crear HTML Ingresos //
+// Eliminar registro
+const eliminarRegistro = (id) => {
+  const res = cuentaApp.eliminarRegistro(id);
+  if (res >= 0) {
+    const child = document.getElementById(`registro_${id}`);
+    const father = child.parentNode;
+    father.removeChild(child);
+    cargarCabecero();
+  }
+};
 
-const crearIngresoHTML = (ingreso) => {
-  let ingresoHTML = `
-    <div class="elemento limpiarEstilos">
-    
-    <div class="elemento_descripcion" style="margin-right: 35px">
-    <span style="margin-right: 5px">${ingreso.categoria}</span>
-    ${ingreso.descripcion}</div>
-            <div class="derecha limpiarEstilos">
-                <div class="elemento_valor">${formatoMoneda(ingreso.valor)}
-                    </div>
-                        <div class="elemento_eliminar">
-                            <button class="elemento_eliminar--btn">
-                                <ion-icon name="close-outline" onclick='eliminarIngreso(${
-                                  ingreso.id
-                                })'></ion-icon>
-                            </button>
-            </div>
-        </div>                    
+// Crear HTML de registro
+const crearRegistroHTML = (registro) => {
+  let registroHTML = `
+    <div id="registro_${registro.id}" class="elemento limpiarEstilos">
+
+      <div class="elemento_descripcion" style="margin-right: 35px">
+        <span style="margin-right: 5px">${registro.categoria}</span>
+        ${registro.descripcion}
+      </div>
+
+      <div class="derecha limpiarEstilos">
+        <div class="elemento_valor">${formatoMoneda(registro.valor)}</div>
+        <div class="elemento_eliminar">
+          <button class="elemento_eliminar--btn">
+            <ion-icon name="close-outline" onclick='eliminarRegistro(${
+              registro.id
+            })'></ion-icon>
+          </button>
+        </div>
+      </div>                    
+      
     </div>    
     `;
-  return ingresoHTML;
+  return registroHTML;
 };
 
-// Lista Egresos //
-
-const cargarEgresos = () => {
-  let egresosHTML = "";
-  for (let egreso of egresos) {
-    egresosHTML += crearEgresoHTML(egreso);
-  }
-  document.getElementById("lista-egresos").innerHTML = egresosHTML;
-};
-
-// Crear HTML Egresos //
-
-const crearEgresoHTML = (egreso) => {
-  let egresoHTML = `
-    <div class="elemento limpiarEstilos">   
-
-                    <div class="elemento_descripcion" style="margin-right: 35px">
-                    <span style="margin-right: 5px">${egreso.categoria}</span>
-                    ${egreso.descripcion}</div>
-
-                    <div class="derecha limpiarEstilos">
-                        <div class="elemento_valor">- ${formatoMoneda(
-                          egreso.valor
-                        )}</div>
-                        <div class="elemento_porcentaje">${formatoPorcentaje(
-                          egreso.valor / totalEgresos()
-                        )}</div>
-                        <div class="elemento_eliminar">
-                            <button class="elemento_eliminar--btn">
-                                <ion-icon name="close-outline" onclick='eliminarEgreso(${
-                                  egreso.id
-                                })'></ion-icon>
-                            </button>
-                        </div>
-                    </div>
-                </div>    
-    `;
-  return egresoHTML;
-};
-
-// Agregar Datos Formulario //
-
-let agregarDato = () => {
-  let forma = document.getElementById("forma");
-  let categoria = forma["categoria"];
-  let tipo = forma["tipo"];
-  let descripcion = forma["descripcion"];
-  let valor = forma["valor"];
-  if (descripcion.value !== "" && valor.value !== "") {
-    if (tipo.value === "ingreso") {
-      ingresos.push(
-        new Ingreso(descripcion.value, +valor.value, categoria.value)
-      );
-      cargarCabecero();
-      cargarIngresos();
-      swal("Agregaste un nuevo ingreso");
-    } else if (tipo.value === "egreso") {
-      egresos.push(
-        new Egreso(descripcion.value, +valor.value, categoria.value)
-      );
-      cargarCabecero();
-      cargarEgresos();
-      swal("Agregaste un nuevo egreso");
-    }
-  }
-};
-
+// Carga categorias en el desplegable
 let cargarCategoria = async () => {
   let contenido = "";
 
@@ -185,9 +106,9 @@ let cargarCategoria = async () => {
   const resJSON = await res.json();
 
   resJSON.Tipo.map(
-    (pepe) =>
-      (contenido += `<option value="${pepe.value}" selected>${pepe.descripcion}</option>`)
+    (categoria) =>
+      (contenido += `<option value="${categoria.value}" selected>${categoria.descripcion}</option>`)
   );
   const desplegable = document.getElementById("categoria");
-  desplegable.innerHTML = contenido;  
+  desplegable.innerHTML = contenido;
 };
